@@ -1,0 +1,32 @@
+
+\documentclass[tikz,convert={outfile=\jobname.svg}]{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows}
+
+%\usetikzlibrary{...}% tikz package already loaded by 'tikz' option
+\begin{document}
+
+
+
+\begin{tikzpicture}[->,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 4.5cm}] 
+\node [arn_n, align=left] {
+                   \includegraphics[width=.33\textwidth]{gpSamples/main.png}
+\\
+SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
+      child{ node [arn_r, align=center]{\includegraphics[width=.33\textwidth]{gpSamples/selin.png}\\ SE $\times$ LIN} 
+	      child{ node [arn_n, align=center] {\includegraphics[width=.2\textwidth]{gpSamples/se.png}\\ SE}}
+	      child{ node [arn_n, align=center] {\includegraphics[width=.2\textwidth]{gpSamples/lin.png}\\ LIN }}                            
+      }
+        child{ node [arn_r, align=center]{\includegraphics[width=.33\textwidth]{gpSamples/perlin.png}\\ PER $\times$ LIN} 
+            child{ node [arn_n, align=center] {\includegraphics[width=.2\textwidth]{gpSamples/per.png}\\ PER}} 
+            child{ node [arn_n, align=center] {\includegraphics[width=.2\textwidth]{gpSamples/lin2.png}\\ LIN}}
+		}
+      child{ node [arn_r, align=center]{\includegraphics[width=.33\textwidth]{gpSamples/rqlin.png}\\ RQ $\times$ LIN} 
+            child{ node [arn_n, align=center] {\includegraphics[width=.2\textwidth]{gpSamples/rq.png}\\ RQ}}
+            child{ node [arn_n, align=center] {\includegraphics[width=.2\textwidth]{gpSamples/lin.png}\\ LIN}}
+		}
+; 
+\end{tikzpicture}
+\end{document}
