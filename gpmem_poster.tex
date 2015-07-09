@@ -228,9 +228,6 @@ INFER (repeat 100 (do
 
 \end{lstlisting}
 \end{minipage}
-
-[\textbf{TODO:} ``Here we use a squared-exponential plus white-noise kernel\ldots'' (the parameters $\ell,\theta,\sigma$, or whatever notation you choose to use, should be declared here)]
-
 Observed data is generated with the following model: 
 \begin{equation*}
 f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; with\;\;\eta \sim \mathcal{N}(0,\sigma)
@@ -239,6 +236,7 @@ f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; with\;
 \includegraphics[width=6cm]{neal_se_1final.png}
 \includegraphics[width=6cm]{neal_se_2final.png}
 \includegraphics[width=6cm]{neal_se_3final.png}
+\captionof{figure}{\color{DarkSlateGray} (left to right) predictions before data has been observed, after data has been observed, and after we inferred the hyperparameters}
 \end{center}
 
 
@@ -246,13 +244,11 @@ f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; with\;
 
 
 %\begin{wraptable}{r}{15cm} 
-\begin{wraptable}{r}{7cm} % Left or right alignment is specified in the first bracket, the width of the table is in the second
 \begin{center}
 %\includegraphics[width=10cm]{neal_contour_l_vs_sf_s__marginal_before.png}
 \includegraphics[width=7cm]{neal_contour_l_vs_sf_s__marginal_after.png} 
+\captionof{figure}{\color{DarkSlateGray}  Contour plot and marginals of the the $\ell$ and $\theta$ hyper-parameters of the above program after inference}
 \end{center}
-\end{wraptable}
- Above, we see (left to right) predictions before data has been observed, after data has been observed, and after we inferred the hyperparameters. On the right, we see a contour plot and marginals of the the $\ell$ and $\theta$ hyper-parameters of the above program after inference (right).
 
 \vfill
 \columnbreak
@@ -262,13 +258,7 @@ f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; with\;
 %	Learning of Symbolic Structure
 %----------------------------------------------------------------------------------------
 \section*{GP Structure Learning}
-\begin{itemize}
-\setlength{\itemindent}{1cm}
- \item reasoning over GP kernel structure;
- \item never done in a fully Bayesian fashion;
- \item competitive predictive performance; and
- \item adequate symbolic expressions
- \end{itemize}
+
  \begin{center} 
 \begin{tabular}{m{11.5cm} m{4cm}}
 $SE = \sigma^2 \exp(-\frac{(x-x^\prime)^2}{2\ell^2})$&\includegraphics[width=4cm]{gpSamples/se.png}\\
@@ -286,19 +276,20 @@ $RQ =   \theta \bigg(1 + \frac{(x - x^\prime)^2}{2 \alpha \ell^2} \bigg)^{-\alph
 \begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian GP Structure Learning,mathescape]
 ;;; GRAMMAR FOR KERNEL STRUCTURE
 [ASSUME base-kernels (list K$_1$,K$_2$,$\cdots$,K$_n$)] ;; defined as above
-[ASSUME p$_n$ (uniform-structure n)]        ;; prior on the number of kernels
-[ASSUME S$_{\emph{K}}$ (subset  base-kernels p$_n$)]    ;; sampling a subset of size n
-[ASSUME composition (lambda (l)          ;; kernel composition
+
+;; prior on the number of kernels
+[ASSUME p-number-k (tag 'number-kernels (uniform-structure n))]
+[ASSUME s (tag 'choice-subset (subset  base-kernels p-number-k))] 
+
+[ASSUME composition (tag 'composit (lambda (l) ;; kernel composition
                      (if (lte ( size l) 1)
                          (first l)
                           (if (flip)
                               (add-funcs (first l) (cov-compo (rest l)))
                               (mult-funcs (first l) (cov-compo (rest l)))
-                          )
-                     )
-              )
-
-[ASSUME K (composition  S$_{\emph{K}}$)]
+                          ))))
+                          
+[ASSUME K (composition  s)]
 
 [ASSUME (list f-compute f-emu) (gpmem f-restr K )]
 
@@ -307,10 +298,10 @@ for i=1 to n:
 
 ;;; PERFORMING INFERENCE  
 [INFER  (repeat 2000 (DO 
-                        (mh p$_n$ one 1) 
-                        (mh S$_{\emph{K}}$ one 1) 
-                        (mh K$^*$ one 1) 
-                        (mh {hyper-parameters} one 10)) ]
+                        (mh 'number-kernel one 1) 
+                        (mh 'choice-subset one 1) 
+                        (mh 'composit one 1) 
+                        (mh 'hyper one 10)) ]
 
 
 \end{lstlisting}
@@ -321,22 +312,22 @@ for i=1 to n:
 
  
  \subsection*{Results}
- 500 and 100 samples drawn from the posterior on structure for two problems used in the Automated Statistician Project~\cite{duvenaud2013structure}, the airline dataset (above) and the CO2 dataset (below):
+ 500 samples drawn from the posterior on structure for the CO2 dataset used in the Automated Statistician Project~\cite{duvenaud2013structure}:
  \begin{center}\vspace{1cm}
-\includegraphics[width=0.7\linewidth]{structureCo2b.png}
+%\includegraphics[width=0.7\linewidth]{structureCo2b.png}
 %\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
-\includegraphics[width=0.7\linewidth]{structureAirlinec.png}
+\includegraphics[width=0.7\linewidth]{structureCo2b.png}
 \end{center}\vspace{1cm}
- \begin{minipage}{\linewidth}
-\small
-\begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian GP Structure Learning,mathescape]
+Posterior samples for curves for the airline dataset where SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN is sampled from the structure grammar:
+ \begin{center}\vspace{1cm}
+\includegraphics[width=\linewidth]{rawx.png}\\
+\includegraphics[width=\linewidth]{priorx.png}\\
+\includegraphics[width=\linewidth]{posteriorx.png}
+\captionof{figure}{\color{DarkSlateGray} Top: raw data, monthly airline passengers. Middle, prior on functions. Bottom, posterior.}
+\end{center}
 
-Place Holder
 
-\end{lstlisting}
-
-\end{minipage}
- \subsection*{Decomposing a candidate Structure}
+\subsection*{Decomposing a candidate Structure}
 \begin{center}\vspace{1cm}
 \includegraphics[width=0.7\linewidth]{parseTree.pdf}
 %\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
