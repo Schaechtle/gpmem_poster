@@ -170,7 +170,16 @@ with the same inputs can be evaluated by lookup rather than re-computation. {\em
 %----------------------------------------------------------------------------------------
 \section*{Bayesian GP}
 
-We show how we can use  {\tt gpmem} to reproduce Neal's Hierarchical Bayesian GP~\cite{neal1997monte} for data with outliers.
+We show how we can use  {\tt gpmem} to reproduce Neal's Hierarchical Bayesian GP regression~\cite{neal1997monte} for data with outliers.
+\[
+  \text{Regression on data set $D$}
+  \quad\Longleftrightarrow\quad
+  \text{Statistical emulation of the function }
+    f_\restr(x) = \begin{cases}
+      D[x], & \text{if $x$ is a data point} \\
+      \text{Error}, & \text{otherwise}
+    \end{cases}
+\]
 \begin{minipage}{\linewidth}
 \belowcaptionskip=-10pt
 \begin{lstlisting}[frame=single,caption=Hierarchical  GP Smoothing,mathescape,label=alg:gphierarch]
