@@ -47,13 +47,14 @@
 \usepackage{listings}
   \definecolor{mygreen}{rgb}{0,0.4,0}
   \lstset{
-    language=Lisp,
+    language=LISP,
+    comment=[l]{//},
     keywordstyle=\color{black},
     commentstyle=\color{mygreen},
     keywordstyle=[2]\color{RawSienna},
-    keywords=[2]{ASSUME,PREDICT,INFER,OBSERVE,DEFINE},
+    keywords=[2]{assume,predict,infer,observe,DEFINE},
     keywordstyle=[3]\color{black},
-    keywords=[3]{tag,gamma,uniform-continuous,log,make-squaredexp,make-whitenoise,gpmem,mapv,first,repeat,do,mh,one,add-funcs,make-se,lambda,emulator,lookup,argma-of-array,linspace,run,array,pass,mc-argmax,uniform-structure,subset,lte,if,flip,mult-funcs,for,to},
+    keywords=[3]{else,tag,gamma,uniform_continuous,log,make_squaredexp,make_whitenoise,gpmem,mapv,first,repeat,do,mh,one,add_funcs,make_se,lambda,emulator,lookup,argmax_of_array,linspace,run,array,pass,mc_argmax,uniform_structure,subset,lte,if,flip,mult_funcs,for,to},
     basicstyle=\LSTfont,
     literate=%
     {0}{{{\color{DarkBlue}0}}}1
@@ -122,12 +123,12 @@
 \vspace{2cm}
 
 \begin{center}
-\addtolength{\tabcolsep}{20pt} 
+\addtolength{\tabcolsep}{5pt} 
 \veryHuge \textbf{Probabilistic Programming with Gaussian Process Memoization} \color{Black}\\[1.5cm] % Title
- \Large   \begin{tabular}{  c  c  c c}
-           \textbf{Ulrich Schaechtle}  & \textbf{Ben Zinberg} & \textbf{Vikash K. Mansinghka} & \textbf{Kostas Stathis}\\ 
-           Department of Computer Science & Computer Science \& AI Lab & Computer Science \& AI Lab & Department of Computer Science \\
-           Royal Holloway, Univ. of London & Massachusetts Institute of Technology & Massachusetts Institute of Technology & Royal Holloway, Univ. of London \\
+ \large   \begin{tabular}{  c  c  c c c}
+           \textbf{Ulrich Schaechtle}  & \textbf{Ben Zinberg} & \textbf{Alexey Radul} & \textbf{Kostas Stathis}& \textbf{Vikash K. Mansinghka}\\ 
+           Department of Computer Science & Computer Science \& AI Lab & Computer Science \& AI Lab & Department of Computer Science & Computer Science \& AI Lab \\
+           Royal Holloway, Univ. of London & Massachusetts Institute of Technology & Massachusetts Institute of Technology & Royal Holloway, Univ. of London & Massachusetts Institute of Technology \\
         \end{tabular}
 
 \addtolength{\tabcolsep}{-2pt} 
@@ -201,30 +202,31 @@ Statistical emulation of $f_\restr(x) = \begin{cases}
 \begin{minipage}{\linewidth}
 \belowcaptionskip=-10pt
 \begin{lstlisting}[frame=single,caption=Hierarchical  GP Smoothing,mathescape,label=alg:gphierarch]
-;;; SETTING UP THE MODEL
-ASSUME alpha-sf (tag 'hyperhyper (gamma 7 1))
-ASSUME {{... several more hyper-hyperparameters ...}}
-;; Parameters of the covariance function
-ASSUME sf (tag 'hyper (log (gamma alpha-sf beta-sf)))
-ASSUME l (tag 'hyper (log (gamma alpha-l beta-l)))
-ASSUME sigma (tag 'hyper (uniform-continuous 0 2))
-;; The covariance function
-ASSUME se (make-squaredexp sf l)
-ASSUME wn (make-whitenoise sigma)
-ASSUME composite-covariance (add-funcs se wn)
+/// SETTING UP THE MODEL
+assume alpha_sf = tag('hyperhyper, gamma(7, 1))
+assume beta_sf = tag('hyperhyper, gamma(7, 1))
+assume alpha_l = tag('hyperhyper, gamma(7, 1))
+assume beta_l = tag('hyperhyper, gamma(7, 1))
+// Parameters of the covariance function
+assume log_sf =  tag('hyper, log(gamma(alpha_sf, beta_sf))))
+assume log_l =  tag('hyper, log(gamma(alpha_l, beta_l))))
+assume log_sigma =  tag('hyper, log(uniform_continuous(0, 2)))
 
-;;; PERFORMING INFERENCE
-;; Create a prober and emulator using gpmem
-ASSUME f-restr (get-neal-prober)
-ASSUME compute-and-emu (gpmem f-restr composite-covariance)
+// The covariance function
+assume se = make_squaredexp(sf, l)
+assume wn = make_whitenoise(sigma)
+assume composite_covariance = add_funcs(se, wn)
 
-;; Probe all data points
-PREDICT (mapv (first compute-and-emu) (get-neal-data-xs))
+/// PERFORMING INFERENCE
+// Create a prober and emulator using gpmem
+assume f_restr = get_neal_prober()
+assume compute_and_emu = gpmem(f_restr, composite_covariance)
 
-;; Infer hypers and hyperhypers
-INFER (repeat 100 (do
-    (mh 'hyperhyper one 2)
-    (mh 'hyper one 1)))
+// Probe all data points
+predict mapv(first(compute_and_emu), get_neal_data_xs())
+
+// Infer hypers and hyperhypers
+infer repeat(100, do(mh('hyperhyper, one, 2), mh('hyper, one, 1)))
 
 \end{lstlisting}
 \end{minipage}
@@ -233,9 +235,9 @@ Observed data is generated with the following model:
 f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; \text{with}\;\;\eta \sim \mathcal{N}(0,\sigma)
 \end{equation*} where $\sigma = 0.1$ with probability $0.95$, $\sigma = 1$ otherwise.
 \begin{center}
-\includegraphics[width=6cm]{neal_se_1final.png}
-\includegraphics[width=6cm]{neal_se_2final.png}
-\includegraphics[width=6cm]{neal_se_3final.png}
+\includegraphics[width=7cm]{neal_se_1final.png}
+\includegraphics[width=7cm]{neal_se_2final.png}
+\includegraphics[width=7cm]{neal_se_3final.png}
 \captionof{figure}{\color{DarkSlateGray} (left to right) predictions before data has been observed, after data has been observed, and after we inferred the hyperparameters}
 \end{center}
 
@@ -247,7 +249,7 @@ f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; \text{
 \begin{center}
 %\includegraphics[width=10cm]{neal_contour_l_vs_sf_s__marginal_before.png}
 \includegraphics[width=7cm]{neal_contour_l_vs_sf_s__marginal_after.png} 
-\captionof{figure}{\color{DarkSlateGray}  Contour plot and marginals of the the $\ell$ and $\theta$ hyper-parameters of the above program after inference}
+\captionof{figure}{\color{DarkSlateGray}  Contour plot and marginals of the the l and sf hyper-parameters of the above program after inference}
 \end{center}
 
 \vfill
@@ -274,33 +276,35 @@ $RQ =   \theta \bigg(1 + \frac{(x - x^\prime)^2}{2 \alpha \ell^2} \bigg)^{-\alph
 \begin{minipage}{\linewidth}
 \small
 \begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian GP Structure Learning,mathescape]
-;;; GRAMMAR FOR KERNEL STRUCTURE
-ASSUME base-kernels (list K$_1$,K$_2$,$\cdots$,K$_n$) ;; defined as above
+/// GRAMMAR FOR KERNEL STRUCTURE
+assume base_kernels =  list(se, wn, lin, per, rq) // defined as above
 
-;; prior on the number of kernels
-ASSUME p-number-k (tag 'number-kernels (uniform-structure n))
-ASSUME s (tag 'choice-subset (subset  base-kernels p-number-k)) 
+// prior on the number of kernels
+assume p_number_k = tag('number_kernels, uniform_structure(n))
+assume s = tag('choice_subset(subset(base_kernels, p_number_k))) 
 
-ASSUME composition (tag 'composit (lambda (l) ;; kernel composition
-                     (if (lte ( size l) 1)
-                         (first l)
-                          (if (flip)
-                              (add-funcs (first l) (cov-compo (rest l)))
-                              (mult-funcs (first l) (cov-compo (rest l)))
-                          ))))
+assume composition = tag('composit,lambda(l, // kernel composition
+                     if lte(size(l), 1) {
+			  first(l)
+		     } else {
+			  if (flip()) { 
+                              add_funcs(first(l), cov_compo(rest(l)))
+                          } else {
+                              mult_funcs(first(l), cov_compo(rest(l)))
+                          } ))
                           
-ASSUME K (composition  s)
+assume K = composition(s)
 
-ASSUME (list f-compute f-emu) (gpmem f-restr K )
+assume (f_compute f_emu) = gpmem(f_restr, K)
 
-PREDICT (mapv f-compute (get-data-xs)) ;; probe all data points
+predict mapv(f_compute(get_data_xs)) // probe all data points
 
-;;; PERFORMING INFERENCE  
-INFER  (repeat 2000 (do
-                        (mh 'number-kernel one 1) 
-                        (mh 'choice-subset one 1) 
-                        (mh 'composit one 1) 
-                        (mh 'hyper one 10)))
+/// PERFORMING INFERENCE  
+infer  repeat(2000, do(
+                        mh('number_kernel, one, 1) 
+                        mh('choice_subset, one, 1) 
+                        mh('composit, one, 1) 
+                        mh('hyper, one, 10)))
 \end{lstlisting}
 
 \end{minipage}
@@ -339,36 +343,35 @@ Posterior samples for curves for the airline dataset where SE $\times$ LIN $+$ P
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian Optimization,mathescape]
-ASSUME sf1 (tag 'hyper (log (uniform-continuous 0 10)))
-ASSUME l1 (tag 'hyper (log (uniform-continuous 0 10)))
-ASSUME se (make-se sf1 l1)
-ASSUME blackbox-f (get-bayesopt-blackbox)
-ASSUME compute-and-emu (gpmem blackbox-f se)
+assume sf = tag('hyper, log(uniform_continuous(0, 10)))
+assume l = tag('hyper, log(uniform_continuous(0, 10)))
+assume se = make_se(sf, l)
+assume blackbox_f = get_bayesopt_blackbox()
+assume compute_and_emu = gpmem(blackbox_f, se)
 
-DEFINE get-uniform-candidate 
-	(lambda (prev-xs) (uniform-continuous -20 20))
-DEFINE mc-argmax
-        (lambda (emulator prev-xs)
-             ((lambda (candidate-xs)
-                (lookup candidate-xs
-                        (argmax-of-array (mapv emulator candidate-xs))))
-              (mapv (lambda (i) (get-uniform-candidate prev-xs))
-                   (linspace 0 19 20))))
-DEFINE emulator-point-sample
-        (lambda (x)
-          (run (sample
-            (lookup ((second compute-and-emu) (array ,x))
-                    0))))
+define get_uniform_candidate =  
+	lambda(prev_xs,uniform_continuous(-20, 20))
+define mc_argmax =
+        lambda((emulator, prev_xs),
+             lambda(candidate_xs,
+                lookup(candidate_xs,
+                        argmax_of_array(mapv(emulator, candidate_xs))))
+              mapv(lambda(i,get_uniform_candidate(prev_xs)),
+                   linspace(0, 19, 20)))
+define emulator_point_sample = 
+        lambda(x,
+          run(sample
+            lookup(second compute_and_emu() array(x))
+                    0)))
 
-INFER
-    (repeat 15 (do pass
+infer
+    repeat(15,do(pass
 
-      ;; Call f-compute on the next probe point
-      (PREDICT ((first compute-and-emu)
-                ,(mc-argmax emulator-point-sample '-)))
+      // Call f_compute on the next probe point
+      predict first(compute_and_emu) = mc_argmax(emulator_point_sample, '-)
                 
-      ;; Hyperparameter inference
-      (mh 'hyper one 50)))
+      // Hyperparameter inference
+      mh('hyper, one, 50)))
 \end{lstlisting}
 \end{minipage}
       
