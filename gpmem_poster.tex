@@ -54,7 +54,7 @@
     keywordstyle=[2]\color{RawSienna},
     keywords=[2]{assume,predict,infer,observe,DEFINE},
     keywordstyle=[3]\color{black},
-    keywords=[3]{else,tag,gamma,uniform_continuous,log,make_squaredexp,make_whitenoise,gpmem,mapv,first,repeat,do,mh,one,add_funcs,make_se,lambda,emulator,lookup,argmax_of_array,linspace,run,array,pass,mc_argmax,uniform_structure,subset,lte,if,flip,mult_funcs,for,to},
+    keywords=[3]{then,else,tag,gamma,uniform_continuous,log,make_squaredexp,make_whitenoise,gpmem,mapv,first,repeat,do,mh,one,add_funcs,make_se,lambda,emulator,lookup,argmax_of_array,linspace,run,array,pass,mc_argmax,uniform_structure,subset,lte,if,flip,mult_funcs,for,to,get_neal_blackbox,get_neal_data_xs,get_data_xs,size,get_bayesopt_blackbox},
     basicstyle=\LSTfont,
     literate=%
     {0}{{{\color{DarkBlue}0}}}1
@@ -208,9 +208,9 @@ assume beta_sf = tag('hyperhyper, gamma(7, 1))
 assume alpha_l = tag('hyperhyper, gamma(7, 1))
 assume beta_l = tag('hyperhyper, gamma(7, 1))
 // Parameters of the covariance function
-assume log_sf =  tag('hyper, log(gamma(alpha_sf, beta_sf))))
-assume log_l =  tag('hyper, log(gamma(alpha_l, beta_l))))
-assume log_sigma =  tag('hyper, log(uniform_continuous(0, 2)))
+assume log_sf = tag('hyper, log(gamma(alpha_sf, beta_sf))))
+assume log_l = tag('hyper, log(gamma(alpha_l, beta_l))))
+assume log_sigma = tag('hyper, log(uniform_continuous(0, 2)))
 
 // The covariance function
 assume se = make_squaredexp(sf, l)
@@ -219,14 +219,16 @@ assume composite_covariance = add_funcs(se, wn)
 
 /// PERFORMING INFERENCE
 // Create a prober and emulator using gpmem
-assume f_restr = get_neal_prober()
+assume f_restr = get_neal_blackbox()
 assume compute_and_emu = gpmem(f_restr, composite_covariance)
 
 // Probe all data points
 predict mapv(first(compute_and_emu), get_neal_data_xs())
 
 // Infer hypers and hyperhypers
-infer repeat(100, do(mh('hyperhyper, one, 2), mh('hyper, one, 1)))
+infer repeat(100, do(
+    mh('hyperhyper, one, 2),
+    mh('hyper, one, 1)))
 
 \end{lstlisting}
 \end{minipage}
@@ -276,34 +278,32 @@ $RQ =   \theta \bigg(1 + \frac{(x - x^\prime)^2}{2 \alpha \ell^2} \bigg)^{-\alph
 \begin{minipage}{\linewidth}
 \small
 \begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian GP Structure Learning,mathescape]
-/// GRAMMAR FOR KERNEL STRUCTURE
-assume base_kernels =  list(se, wn, lin, per, rq) // defined as above
+// GRAMMAR FOR KERNEL STRUCTURE
+assume base_kernels = list(se, wn, lin, per, rq) // defined as above
 
 // prior on the number of kernels
 assume p_number_k = tag('number_kernels, uniform_structure(n))
-assume s = tag('choice_subset(subset(base_kernels, p_number_k))) 
+assume s = tag('choice_subset, subset(base_kernels, p_number_k))
 
-assume composition = tag('composit,lambda(l, // kernel composition
-                     if lte(size(l), 1) {
-			  first(l)
-		     } else {
-			  if (flip()) { 
-                              add_funcs(first(l), cov_compo(rest(l)))
-                          } else {
-                              mult_funcs(first(l), cov_compo(rest(l)))
-                          } ))
+assume cov_compo = proc(l) {
+  // kernel composition
+  if (size(l) <= 1)
+  then { first(l) }
+  else { if (flip()) then { add_funcs(first(l), cov_compo(rest(l))) }
+                     else { mult_funcs(first(l), cov_compo(rest(l))) }
+       }
+  })
                           
-assume K = composition(s)
+assume K = tag('composit, cov_compo(s))
 
 assume (f_compute f_emu) = gpmem(f_restr, K)
-
 predict mapv(f_compute(get_data_xs)) // probe all data points
 
-/// PERFORMING INFERENCE  
+// PERFORMING INFERENCE  
 infer  repeat(2000, do(
-                        mh('number_kernel, one, 1) 
-                        mh('choice_subset, one, 1) 
-                        mh('composit, one, 1) 
+                        mh('number_kernel, one, 1),
+                        mh('choice_subset, one, 1),
+                        mh('composit, one, 1),
                         mh('hyper, one, 10)))
 \end{lstlisting}
 
@@ -345,31 +345,33 @@ Posterior samples for curves for the airline dataset where SE $\times$ LIN $+$ P
 \begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian Optimization,mathescape]
 assume sf = tag('hyper, log(uniform_continuous(0, 10)))
 assume l = tag('hyper, log(uniform_continuous(0, 10)))
-assume se = make_se(sf, l)
+assume se = make_squaredexp(sf, l)
 assume blackbox_f = get_bayesopt_blackbox()
 assume compute_and_emu = gpmem(blackbox_f, se)
 
-define get_uniform_candidate =  
-	lambda(prev_xs,uniform_continuous(-20, 20))
-define mc_argmax =
-        lambda((emulator, prev_xs),
-             lambda(candidate_xs,
-                lookup(candidate_xs,
-                        argmax_of_array(mapv(emulator, candidate_xs))))
-              mapv(lambda(i,get_uniform_candidate(prev_xs)),
-                   linspace(0, 19, 20)))
-define emulator_point_sample = 
-        lambda(x,
-          run(sample
-            lookup(second compute_and_emu() array(x))
-                    0)))
+define get_uniform_candidate = proc(prev_xs) {
+    uniform_continuous(-20, 20)
+}
 
-infer
-    repeat(15,do(pass
+define mc_argmax = proc(f, prev_xs) {
+    // Monte Carlo estimator for the argmax of f.
+    run(do(
+        candidate_xs <- mapv(proc(i) { get_uniform_candidate(prev_xs) },
+                             linspace(0, 19, 20)),
+        candidate_ys <- mapv(f, candidate_xs),
+        lookup(candidate_xs, argmax_of_array(candidate_ys))))
+}
 
+define emulator_point_sample = proc(x) {
+    run(sample(lookup(
+        second(compute_and_emu)(array(x)),
+        0)))
+}
+
+infer repeat(15, do(pass,
       // Call f_compute on the next probe point
-      predict first(compute_and_emu) = mc_argmax(emulator_point_sample, '-)
-                
+      predict first(compute_and_emu)(
+                  mc_argmax(emulator_point_sample, '_)),
       // Hyperparameter inference
       mh('hyper, one, 50)))
 \end{lstlisting}
