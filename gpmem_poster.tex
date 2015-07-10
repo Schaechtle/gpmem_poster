@@ -263,6 +263,7 @@ f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; \text{
 %----------------------------------------------------------------------------------------
 \section*{GP Structure Learning}
 
+\subsection*{Base Kernels}
  \begin{center} 
 \begin{tabular}{m{11.5cm} m{4cm}}
 $SE = \sigma^2 \exp(-\frac{(x-x^\prime)^2}{2\ell^2})$&\includegraphics[width=4cm]{gpSamples/se.png}\\
@@ -275,9 +276,16 @@ $RQ =   \theta \bigg(1 + \frac{(x - x^\prime)^2}{2 \alpha \ell^2} \bigg)^{-\alph
 \begin{equation*}
 \mathbf{K}_{\textrm{new}} = \mathbf{K}_1 + \mathbf{K}_2 \;\;\;\;\;\;\text{or}\;\;\;\;\;\; \mathbf{K}_{\textrm{new}} = \mathbf{K}_1 \times \mathbf{K}_2 
 \end{equation*}
+
+\begin{center}\vspace{1cm}
+\includegraphics[width=0.8\linewidth]{parseTree.pdf}
+%\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
+\end{center}
+\vspace{1cm}
+
 \begin{minipage}{\linewidth}
 \small
-\begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian GP Structure Learning,mathescape]
+\begin{lstlisting}[frame=single,label=alg:structureVent,mathescape]
 // GRAMMAR FOR KERNEL STRUCTURE
 assume base_kernels = list(se, wn, lin, per, rq) // defined as above
 
@@ -327,12 +335,6 @@ Posterior samples for curves for the airline dataset where SE $\times$ LIN $+$ P
 \captionof{figure}{\color{DarkSlateGray} Top: raw data, monthly airline passengers. Middle, prior on functions. Bottom, posterior.}
 \end{center}
 
-
-\subsection*{Decomposing a candidate Structure}
-\begin{center}\vspace{1cm}
-\includegraphics[width=0.7\linewidth]{parseTree.pdf}
-%\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
-\end{center}\vspace{1cm}
  
 \vfill
 \columnbreak
