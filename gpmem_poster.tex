@@ -54,7 +54,7 @@
     keywordstyle=[2]\color{RawSienna},
     keywords=[2]{assume,predict,infer,observe,DEFINE},
     keywordstyle=[3]\color{black},
-    keywords=[3]{then,else,proc,tag,gamma,uniform_continuous,log,make_squaredexp,make_whitenoise,gpmem,mapv,first,repeat,do,mh,one,add_funcs,make_se,lambda,emulator,lookup,argmax_of_array,linspace,run,array,pass,mc_argmax,uniform_structure,subset,lte,if,flip,mult_funcs,for,to,get_neal_blackbox,get_neal_data_xs,get_data_xs,size,get_bayesopt_blackbox},
+    keywords=[3]{then,else,proc,tag,gamma,uniform_continuous,log,make_squaredexp,make_whitenoise,gpmem,mapv,first,repeat,do,mh,one,add_funcs,make_se,lambda,lookup,argmax_of_array,linspace,run,array,pass,mc_argmax,uniform_structure,subset,lte,if,flip,mult_funcs,for,to,get_neal_blackbox,get_neal_data_xs,get_data_xs,size,get_bayesopt_blackbox},
     basicstyle=\LSTfont,
     literate=%
     {0}{{{\color{DarkBlue}0}}}1
@@ -81,6 +81,7 @@
 \newcommand{\prior}{{\textrm{prior}}}
 \newcommand{\noisy}{{\textrm{noisy}}}
 \newcommand{\noise}{{\textrm{noise}}}
+\newcommand{\rmnext}{{\textrm{next}}}
 
 \newcommand{\Acal}{\mathcal{A}}
 \newcommand{\R}{\mathbb{R}}
@@ -102,6 +103,7 @@
 \newcommand{\mvert}{\ \middle\vert\ }
 
 \DeclareMathOperator*{\Cov}{Cov}
+\DeclareMathOperator*{\argmax}{arg\,max}
 \begin{document}
 
 %----------------------------------------------------------------------------------------
@@ -342,9 +344,17 @@ Posterior samples for curves for the airline dataset where SE $\times$ LIN $+$ P
 %	Bayesian Optimization
 %----------------------------------------------------------------------------------------
 \section*{Bayesian Optimization}
+\subsection*{Thompson Sampling for Homogeneous Sequential Markov Decision Processes}
+
+\noindent Two phases, each takes one line of code:
+\begin{enumerate}
+  \item Sample a context $V_\emu \sim P(V_\emu)$ using a Metropolis--Hastings sampler.
+  \item Probe the point $x_\rmnext = \argmax_x V_\emu(x)$.
+\end{enumerate}
+\vspace{1cm}
 
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[frame=single,label=alg:structureVent,caption=Venture Code for Bayesian Optimization,mathescape]
+\begin{lstlisting}[frame=single,label=alg:structureVent,mathescape]
 assume sf = tag('hyper, log(uniform_continuous(0, 10)))
 assume l = tag('hyper, log(uniform_continuous(0, 10)))
 assume se = make_squaredexp(sf, l)
@@ -371,10 +381,10 @@ define emulator_point_sample = proc(x) {
 }
 
 infer repeat(15, do(pass,
-      // Call f_compute on the next probe point
+      // Phase 2: Call f_compute on the next probe point
       predict first(compute_and_emu)(
                   mc_argmax(emulator_point_sample, '_)),
-      // Hyperparameter inference
+      // Phase 1: Hyperparameter inference
       mh('hyper, one, 50)))
 \end{lstlisting}
 \end{minipage}
@@ -384,22 +394,19 @@ infer repeat(15, do(pass,
 % \item  the ability to search over a broader space of contexts than the parametric families that are typically used;
 % \item parsimony of the resulting probabilistic program.
 %\end{itemize}
-\subsection*{Thompson Sampling for Homogeneous Sequential Markov Decision Processes}
 
+\subsection*{Results}
+\begin{center}
+  \includegraphics[width=20cm]{BayesOpt_gpmem_sequence.png}
+\end{center}
 
-
-\includegraphics[width=20cm]{BayesOpt_gpmem_sequence.png}
-
-
-\subsection*{Above: Dynamics of Thompson sampling}
 \begin{itemize}
- \item the blue curve is the true function $V$;
- \item the red region is a blending of 100 samples of the curve generated (jointly) by a GP-based emulator $V_\emu$;
- \item  the left and right columns show the state of $V_\emu$ before and after hyperparameter inference
- \item in the right column, the next chosen probe point is circled in green;
- \item each successive probe point $a$ is the (stochastic) maximum of $V_\emu$, sampled pointwise and conditioned on the values of the previously probed points; and
- \item probes tend to happen at points either where the value of $V_\emu$ is high, or where $V_\emu$ has high uncertainty.
+  \item Blue: Unknown true value function $V$
+  \item Red: Current state of our statistical emulator $V_\emu$, conditioned on previously probed values of $V$
+  \item Green: Next chosen probe point $x_\rmnext$
+  \item Left: before hyperparameter inference; right: after hyperparameter inference
 \end{itemize}
+Probes tend to happen at points either where the value of $V_\emu$ is high, or where $V_\emu$ has high uncertainty.
 
      
      
