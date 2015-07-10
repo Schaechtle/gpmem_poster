@@ -201,9 +201,10 @@ Statistical emulation of $f_\restr(x) = \begin{cases}
       \text{Error}, & \text{otherwise}
     \end{cases}$
 \end{center}
+\vspace{1cm}
 \begin{minipage}{\linewidth}
 \belowcaptionskip=-10pt
-\begin{lstlisting}[frame=single,caption=Hierarchical  GP Smoothing,mathescape,label=alg:gphierarch]
+\begin{lstlisting}[frame=single,mathescape,label=alg:gphierarch]
 /// SETTING UP THE MODEL
 assume alpha_sf = tag('hyperhyper, gamma(7, 1))
 assume beta_sf = tag('hyperhyper, gamma(7, 1))
@@ -234,30 +235,30 @@ infer repeat(100, do(
 
 \end{lstlisting}
 \end{minipage}
-Observed data is generated with the following model: 
-\begin{equation*}
-f(x) =  0.3 + 0.4 x + 0.5 \sin(2.7x) + \frac{1.1}{(1+ x^2)} + \eta \;\;\; \text{with}\;\;\eta \sim \mathcal{N}(0,\sigma)
-\end{equation*} where $\sigma = 0.1$ with probability $0.95$, $\sigma = 1$ otherwise.
+\subsection*{Results}
+Ran the above program on data with outliers: noise $\sigma = 1.0$ with probability $0.05$, noise $\sigma = 0.1$ otherwise.
 \begin{center}
-\includegraphics[width=7cm]{neal_se_1final.png}
-\includegraphics[width=7cm]{neal_se_2final.png}
-\includegraphics[width=7cm]{neal_se_3final.png}
-\captionof{figure}{\color{DarkSlateGray} (left to right) predictions before data has been observed, after data has been observed, and after we inferred the hyperparameters}
+\begin{tabular}{ccc}
+  \includegraphics[width=8cm]{neal_se_1final.png}&
+  \includegraphics[width=8cm]{neal_se_2final.png}&
+  \includegraphics[width=8cm]{neal_se_3final.png}\\
+  Data unobserved &
+  Data observed &
+  Hyperparameters inferred
+\end{tabular}
 \end{center}
 
 
-% Left or right alignment is specified in the first bracket, the width of the table is in the second
 
-
-%\begin{wraptable}{r}{15cm} 
-\begin{center}
-%\includegraphics[width=10cm]{neal_contour_l_vs_sf_s__marginal_before.png}
-\includegraphics[width=7cm]{neal_contour_l_vs_sf_s__marginal_after.png} 
-\captionof{figure}{\color{DarkSlateGray}  Contour plot and marginals of the the l and sf hyper-parameters of the above program after inference}
-\end{center}
-
-\vfill
-\columnbreak
+%%\begin{wraptable}{r}{15cm} 
+%\begin{center}
+%%\includegraphics[width=10cm]{neal_contour_l_vs_sf_s__marginal_before.png}
+%\includegraphics[width=7cm]{neal_contour_l_vs_sf_s__marginal_after.png} 
+%\captionof{figure}{\color{DarkSlateGray}  Contour plot and marginals of the the l and sf hyper-parameters of the above program after inference}
+%\end{center}
+%
+%\vfill
+%\columnbreak
 
 
 %----------------------------------------------------------------------------------------
