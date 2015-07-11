@@ -82,6 +82,7 @@
 \newcommand{\noisy}{{\textrm{noisy}}}
 \newcommand{\noise}{{\textrm{noise}}}
 \newcommand{\rmnext}{{\textrm{next}}}
+\newcommand{\best}{{\textrm{best}}}
 
 \newcommand{\Acal}{\mathcal{A}}
 \newcommand{\R}{\mathbb{R}}
@@ -404,7 +405,8 @@ infer repeat(15, do(pass,
 \begin{itemize}
   \item Blue: Unknown true value function $V$
   \item Red: Current state of our statistical emulator $V_\emu$, conditioned on previously probed values of $V$
-  \item Green: Next chosen probe point $x_\rmnext$
+  \item Purple: Best probe point seen so far, $x_\best$
+  \item Green: Next chosen probe point, $x_\rmnext$
   \item Left: before hyperparameter inference; right: after hyperparameter inference
 \end{itemize}
 Probes tend to happen at points either where the value of $V_\emu$ is high, or where $V_\emu$ has high uncertainty.
