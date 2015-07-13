@@ -265,10 +265,52 @@ Ran the above program on data with outliers: noise $\sigma = 1.0$ with probabili
 %----------------------------------------------------------------------------------------
 %	Learning of Symbolic Structure
 %----------------------------------------------------------------------------------------
-\section*{GP Structure Learning}
+\section*{Automated Analysis of Time-series Data}
+\subsection*{Inferring Human-interpretable Qualitative Structure}
+\begin{center}
+\includegraphics[width=0.8\linewidth]{schematic.pdf}
+%\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
+\end{center}
+
+
+
+Airline Dataset used in the Automated Statistician Project~\cite{duvenaud2013structure}:
+\begin{center}
+%\includegraphics[width=\linewidth]{rawx.png}\\
+%\includegraphics[width=\linewidth]{priorx.png}\\
+\includegraphics[width=\linewidth]{posteriorx.png}
+\end{center}
+\begin{itemize}
+\item Above: the data (black x) and samples from the posterior (red)
+\item Below: the two most probable structures returned by the program
+\end{itemize}
+
+
+
+ \begin{center} 
+\begin{tabular}{m{12cm} m{12cm}}
+
+{\bf Interpretation}: we have found two global components. First, A smooth trend (LINxSE) with a non-linear increasing slope. Second, a periodic component with increasing variation and noise. &\includegraphics[width=\linewidth]{airline_struct_1.pdf}\\
+{\bf Interpretation}: we found one global component. It is comprised of local changes that are periodic and with changing variation. &\includegraphics[width=\linewidth]{airline_struct_2.pdf}
+
+\end{tabular}
+\end{center}
+
+%\includegraphics[width=0.7\linewidth]{structureCo2b.png}
+%\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
+
+
+
+%\begin{center}
+%\includegraphics[width=0.75\linewidth]{airline_struct_1.pdf}
+%airline_struct_1 
+% \end{center}
+
+
+ 
+
 
 \subsection*{Base Kernels}
-
  \begin{center} 
 \begin{tabular}{m{11.5cm} m{4cm}}
 \small
@@ -326,32 +368,6 @@ infer  repeat(2000, do(
 
 
  
- \subsection*{Results}
-Airline Dataset used in the Automated Statistician Project~\cite{duvenaud2013structure}:
-\begin{center}
-\includegraphics[width=\linewidth]{rawx.png}\\
-\includegraphics[width=\linewidth]{priorx.png}\\
-\includegraphics[width=\linewidth]{posteriorx.png}
-\end{center}
-\begin{itemize}
-\item Above: top, raw data, monthly airline passengers. Middle, prior on functions. Bottom, posterior
-\item Below: the two most likely structures returned by the program
-\end{itemize}
-
- \begin{center}
-%\includegraphics[width=0.7\linewidth]{structureCo2b.png}
-%\captionof{figure}{\color{DarkSlateGray} Composition of covariance function parsed using the example SE $\times$ LIN $+$ PER $\times$ LIN $+$  RQ $\times$ LIN}
-
-\end{center}
-\begin{center}
-\includegraphics[width=0.75\linewidth]{airline_struct_1.pdf}
----------------------------------------------------------------------
-\includegraphics[width=0.7\linewidth]{airline_struct_2.pdf} 
-%airline_struct_1 
- \end{center}
- 
- 
-
 %----------------------------------------------------------------------------------------
 %	Bayesian Optimization
 %----------------------------------------------------------------------------------------
