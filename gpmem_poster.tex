@@ -306,7 +306,7 @@ assume cov_compo = proc(l) {
   else { if (flip()) then { add_funcs(first(l), cov_compo(rest(l))) }
                      else { mult_funcs(first(l), cov_compo(rest(l))) }
        }
-  })
+  }
                           
 assume K = tag('composit, cov_compo(s))
 
